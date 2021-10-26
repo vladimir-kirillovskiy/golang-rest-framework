@@ -1,13 +1,10 @@
-package main
+package article
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-
-	Router "vlad/rest/router"
 
 	"github.com/gorilla/mux"
 )
@@ -19,19 +16,19 @@ type Article struct {
 	Content string `json: "content"`
 }
 
-var Articles []Article
+// var Articles []Article
 
-func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the home page!")
-	fmt.Println("Endpoint hit: homePage")
+var Articles = []Article{
+	{Id: "1", Title: "Hello", Desc: "Article description", Content: "Article content"},
+	{Id: "2", Title: "Hello 2", Desc: "Article description", Content: "Article content"},
 }
 
-func returnAllArticles(w http.ResponseWriter, r *http.Request) {
+func ReturnAllArticles(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: returnAllArticles")
 	json.NewEncoder(w).Encode(Articles)
 }
 
-func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
+func ReturnSingleArticle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["id"]
 
@@ -49,7 +46,7 @@ func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
 //     "desc": "The description for my new post",
 //     "content": "my articles content"
 // }
-func createNewArticle(w http.ResponseWriter, r *http.Request) {
+func CreateNewArticle(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	// fmt.Fprintf(w, "%+v", string(reqBody))
 	var article Article
@@ -61,7 +58,7 @@ func createNewArticle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(article)
 }
 
-func deleteArticle(w http.ResponseWriter, r *http.Request) {
+func DeleteArticle(w http.ResponseWriter, r *http.Request) {
 	// pars parameters
 	vars := mux.Vars(r)
 	// id of the article to delete
@@ -77,7 +74,7 @@ func deleteArticle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Articles)
 }
 
-func updateArticle(w http.ResponseWriter, r *http.Request) {
+func UpdateArticle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -98,31 +95,4 @@ func updateArticle(w http.ResponseWriter, r *http.Request) {
 	}
 	// return all articles to see the result
 	json.NewEncoder(w).Encode(Articles)
-}
-
-func handleRequests() {
-
-	// http.HandleFunc("/", homePage)
-	// http.HandleFunc("/articles", returnAllArticles)
-	// log.Fatal(http.ListenAndServe(":8080", nil))
-
-	myRouter := mux.NewRouter().StrictSlash(true)
-	myRouter.HandleFunc("/", homePage)
-	myRouter.HandleFunc("/articles", createNewArticle).Methods("POST")
-	myRouter.HandleFunc("/articles", returnAllArticles)
-	// NOTE: should be defined before other article endpoints
-	myRouter.HandleFunc("/articles/{id}", deleteArticle).Methods("DELETE")
-	myRouter.HandleFunc("/articles/{id}", updateArticle).Methods("PUT")
-	myRouter.HandleFunc("/articles/{id}", returnSingleArticle)
-	fmt.Println("Server start at localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", myRouter))
-}
-
-func main() {
-	Articles = []Article{
-		{Id: "1", Title: "Hello", Desc: "Article description", Content: "Article content"},
-		{Id: "2", Title: "Hello 2", Desc: "Article description", Content: "Article content"},
-	}
-
-	Router.HandleRequests()
 }
